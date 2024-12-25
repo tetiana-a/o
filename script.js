@@ -1,4 +1,3 @@
-// script.js
 const audio = document.getElementById("audio");
 const playPauseBtn = document.getElementById("playPauseBtn");
 const seekBar = document.getElementById("seekBar");
@@ -62,6 +61,17 @@ trackList.addEventListener("change", () => {
   audio.play();
   playPauseBtn.textContent = "⏸";
   updateEqualizer();
+});
+
+// Play next track when current track ends
+audio.addEventListener("ended", () => {
+  const currentIndex = trackList.selectedIndex; // Get the current index
+  const nextIndex = (currentIndex + 1) % trackList.options.length; // Compute the next index (loop to start if needed)
+  trackList.selectedIndex = nextIndex; // Update the selected option in the playlist
+  audio.src = trackList.options[nextIndex].value; // Set the audio source to the next track
+  audio.play(); // Start playback
+  playPauseBtn.textContent = "⏸"; // Update play/pause button
+  updateEqualizer(); // Restart the equalizer
 });
 
 // Initialize Particles.js
