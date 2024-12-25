@@ -1,11 +1,14 @@
+// Получаем элементы
 const audio = document.getElementById("audio");
 const playPauseBtn = document.getElementById("playPauseBtn");
 const seekBar = document.getElementById("seekBar");
 const timeDisplay = document.getElementById("timeDisplay");
 const bars = document.querySelectorAll(".bar");
 const trackList = document.getElementById("trackList");
+const prevTrackBtn = document.getElementById("prevTrackBtn");
+const nextTrackBtn = document.getElementById("nextTrackBtn");
 
-// Web Audio API setup
+// Web Audio API настройка
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const analyser = audioContext.createAnalyser();
 const source = audioContext.createMediaElementSource(audio);
@@ -29,7 +32,7 @@ function updateEqualizer() {
   if (!audio.paused) requestAnimationFrame(updateEqualizer);
 }
 
-// Audio controls
+// Управление Play/Pause
 playPauseBtn.addEventListener("click", () => {
   if (audio.paused) {
     audioContext.resume();
@@ -42,6 +45,7 @@ playPauseBtn.addEventListener("click", () => {
   }
 });
 
+// Обновление времени и ползунка
 audio.addEventListener("timeupdate", () => {
   seekBar.value = audio.currentTime;
   seekBar.max = audio.duration;
@@ -54,7 +58,7 @@ seekBar.addEventListener("input", () => {
   audio.currentTime = seekBar.value;
 });
 
-// Switch track when user selects a new track from the playlist
+// Переключение трека через список
 trackList.addEventListener("change", () => {
   const selectedTrack = trackList.value;
   audio.src = selectedTrack;
@@ -63,16 +67,35 @@ trackList.addEventListener("change", () => {
   updateEqualizer();
 });
 
-// Play next track when current track ends
-audio.addEventListener("ended", () => {
-  const currentIndex = trackList.selectedIndex; // Get the current index
-  const nextIndex = (currentIndex + 1) % trackList.options.length; // Compute the next index (loop to start if needed)
-  trackList.selectedIndex = nextIndex; // Update the selected option in the playlist
-  audio.src = trackList.options[nextIndex].value; // Set the audio source to the next track
-  audio.play(); // Start playback
-  playPauseBtn.textContent = "⏸"; // Update play/pause button
-  updateEqualizer(); // Restart the equalizer
-});
+// Функция для переключения на следующий трек
+function playNextTrack() {
+  const currentIndex = trackList.selectedIndex;
+  const nextIndex = (currentIndex + 1) % trackList.options.length; // Следующий индекс
+  trackList.selectedIndex = nextIndex; // Устанавливаем следующий трек в списке
+  audio.src = trackList.options[nextIndex].value; // Задаем источник аудио
+  audio.play(); // Воспроизводим
+  playPauseBtn.textContent = "⏸"; // Обновляем кнопку Play/Pause
+  updateEqualizer(); // Перезапускаем эквалайзер
+}
+
+// Функция для переключения на предыдущий трек
+function playPrevTrack() {
+  const currentIndex = trackList.selectedIndex;
+  const prevIndex =
+    (currentIndex - 1 + trackList.options.length) % trackList.options.length; // Предыдущий индекс
+  trackList.selectedIndex = prevIndex; // Устанавливаем предыдущий трек в списке
+  audio.src = trackList.options[prevIndex].value; // Задаем источник аудио
+  audio.play(); // Воспроизводим
+  playPauseBtn.textContent = "⏸"; // Обновляем кнопку Play/Pause
+  updateEqualizer(); // Перезапускаем эквалайзер
+}
+
+// Обработчики для кнопок
+nextTrackBtn.addEventListener("click", playNextTrack);
+prevTrackBtn.addEventListener("click", playPrevTrack);
+
+// Воспроизведение следующего трека автоматически, если текущий закончился
+audio.addEventListener("ended", playNextTrack);
 
 // Initialize Particles.js
 particlesJS('particles-js', {
